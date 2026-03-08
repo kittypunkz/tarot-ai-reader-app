@@ -102,6 +102,13 @@ class SpreadType(str, Enum):
     CELTIC_CROSS = "celtic_cross"
 
 
+class SelectedCardInput(BaseModel):
+    """Card selected by user"""
+    card_id: str = Field(..., description="Card identifier (e.g., 'the_fool')")
+    is_reversed: bool = Field(default=False, description="Whether card is reversed")
+    position: int = Field(..., ge=0, description="Position in spread (0, 1, 2...)")
+
+
 class DrawCardsRequest(BaseModel):
     """Request to draw cards"""
     session_id: str = Field(
@@ -121,6 +128,10 @@ class DrawCardsRequest(BaseModel):
     language: str = Field(
         default="th",
         description="Language code (th, en)"
+    )
+    selected_cards: Optional[List[SelectedCardInput]] = Field(
+        default=None,
+        description="User-selected cards (if manual selection)"
     )
 
 

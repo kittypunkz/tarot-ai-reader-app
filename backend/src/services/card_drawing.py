@@ -148,9 +148,10 @@ class CardDrawingService:
         """
         Draw tarot cards for a reading
         
-        Uses cryptographically secure random for card selection.
-        Each card has 50% chance of being reversed.
+        If user selected cards, use those. Otherwise, draw random cards.
         """
+        from src.data.tarot_cards import get_card_by_id
+        
         # Get spread info
         spread_info = self.get_spread_info(request.spread_type)
         card_count = spread_info.card_count
@@ -158,41 +159,78 @@ class CardDrawingService:
         # Generate reading ID
         reading_id = f"read_{datetime.now().strftime('%Y%m%d')}_{secrets.token_hex(8)}"
         
-        # Get random cards
-        drawn_cards_data = get_random_cards(card_count)
-        
         # Build response cards
         drawn_cards: List[DrawnCard] = []
-        for i, card in enumerate(drawn_cards_data):
-            # 50% chance of reversed
-            orientation = secrets.choice([
-                CardOrientation.UPRIGHT, 
-                CardOrientation.REVERSED
-            ])
+        
+        # Check if user provided selected cards
+        if request.selected_cards and len(request.selected_cards) == card_count:
+            # Use user-selected cards
+            for selected in request.selected_cards:
+                card = get_card_by_id(selected.card_id)
+                if not card:
+                    raise ValueError(f"Invalid card ID: {selected.card_id}")
+                
+                # Use user's orientation choice
+                is_reversed = selected.is_reversed
+                orientation = CardOrientation.REVERSED if is_reversed else CardOrientation.UPRIGHT
+                
+                # Get meaning based on orientation
+                if orientation == CardOrientation.UPRIGHT:
+                    meaning = card.meaning_upright
+                    meaning_th = card.meaning_upright_th
+                else:
+                    meaning = card.meaning_reversed
+                    meaning_th = card.meaning_reversed_th
+                
+                drawn_card = DrawnCard(
+                    position=selected.position,
+                    position_name=spread_info.positions[selected.position],
+                    position_name_th=spread_info.positions_th[selected.position],
+                    card_id=card.id,
+                    card_name=card.name,
+                    card_name_th=card.name_th,
+                    orientation=orientation,
+                    keywords=card.keywords,
+                    keywords_th=card.keywords_th,
+                    meaning=meaning,
+                    meaning_th=meaning_th,
+                    image_url=f"/cards/{card.id}.png"
+                )
+                drawn_cards.append(drawn_card)
+        else:
+            # Draw random cards (fallback)
+            drawn_cards_data = get_random_cards(card_count)
             
-            # Get meaning based on orientation
-            if orientation == CardOrientation.UPRIGHT:
-                meaning = card.meaning_upright
-                meaning_th = card.meaning_upright_th
-            else:
-                meaning = card.meaning_reversed
-                meaning_th = card.meaning_reversed_th
-            
-            drawn_card = DrawnCard(
-                position=i,
-                position_name=spread_info.positions[i],
-                position_name_th=spread_info.positions_th[i],
-                card_id=card.id,
-                card_name=card.name,
-                card_name_th=card.name_th,
-                orientation=orientation,
-                keywords=card.keywords,
-                keywords_th=card.keywords_th,
-                meaning=meaning,
-                meaning_th=meaning_th,
-                image_url=f"/cards/{card.id}.png"  # Placeholder
-            )
-            drawn_cards.append(drawn_card)
+            for i, card in enumerate(drawn_cards_data):
+                # 50% chance of reversed
+                orientation = secrets.choice([
+                    CardOrientation.UPRIGHT, 
+                    CardOrientation.REVERSED
+                ])
+                
+                # Get meaning based on orientation
+                if orientation == CardOrientation.UPRIGHT:
+                    meaning = card.meaning_upright
+                    meaning_th = card.meaning_upright_th
+                else:
+                    meaning = card.meaning_reversed
+                    meaning_th = card.meaning_reversed_th
+                
+                drawn_card = DrawnCard(
+                    position=i,
+                    position_name=spread_info.positions[i],
+                    position_name_th=spread_info.positions_th[i],
+                    card_id=card.id,
+                    card_name=card.name,
+                    card_name_th=card.name_th,
+                    orientation=orientation,
+                    keywords=card.keywords,
+                    keywords_th=card.keywords_th,
+                    meaning=meaning,
+                    meaning_th=meaning_th,
+                    image_url=f"/cards/{card.id}.png"
+                )
+                drawn_cards.append(drawn_card)
         
         # Generate AI interpretation
         interpreter = get_interpreter()

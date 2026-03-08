@@ -58,11 +58,18 @@ export interface DrawnCard {
   image_url?: string;
 }
 
+export interface SelectedCardInput {
+  card_id: string;
+  is_reversed: boolean;
+  position: number;
+}
+
 export interface DrawCardsRequest {
   session_id: string;
   spread_type: SpreadType;
   question: string;
   language: string;
+  selected_cards?: SelectedCardInput[];
 }
 
 export interface DrawCardsResponse {

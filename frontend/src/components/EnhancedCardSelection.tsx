@@ -49,37 +49,37 @@ const SPREAD_TYPES: Record<string, SpreadTypeType> = {
   },
 };
 
-// Mock 78 tarot cards - in real app, fetch from API
+// Real 22 Major Arcana cards - IDs must match backend
 const generateTarotCards = (): TarotCard[] => {
   const majorArcana = [
-    { id: "0", name: "The Fool", nameTh: "เดอะฟูล", number: 0 },
-    { id: "1", name: "The Magician", nameTh: "เดอะเมจิกเชี่ยน", number: 1 },
-    { id: "2", name: "The High Priestess", nameTh: "เดอะไฮพรีสเตส", number: 2 },
-    { id: "3", name: "The Empress", nameTh: "เดอะเอมเพรส", number: 3 },
-    { id: "4", name: "The Emperor", nameTh: "เดอะเอ็มเพอเรอร์", number: 4 },
-    { id: "5", name: "The Hierophant", nameTh: "เดอะไฮเออโรแฟนท์", number: 5 },
-    { id: "6", name: "The Lovers", nameTh: "เดอะเลิฟเวอร์ส", number: 6 },
-    { id: "7", name: "The Chariot", nameTh: "เดอะแชริออท", number: 7 },
-    { id: "8", name: "Strength", nameTh: "สเตร็งท์", number: 8 },
-    { id: "9", name: "The Hermit", nameTh: "เดอะเฮอร์มิต", number: 9 },
-    { id: "10", name: "Wheel of Fortune", nameTh: "วีลออฟฟอร์จูน", number: 10 },
-    { id: "11", name: "Justice", nameTh: "จัสติซ", number: 11 },
-    { id: "12", name: "The Hanged Man", nameTh: "เดอะแฮงแมน", number: 12 },
-    { id: "13", name: "Death", nameTh: "เดธ", number: 13 },
-    { id: "14", name: "Temperance", nameTh: "เทมเพอแรนซ์", number: 14 },
-    { id: "15", name: "The Devil", nameTh: "เดอะเดวิล", number: 15 },
-    { id: "16", name: "The Tower", nameTh: "เดอะทาวเวอร์", number: 16 },
-    { id: "17", name: "The Star", nameTh: "เดอะสตาร์", number: 17 },
-    { id: "18", name: "The Moon", nameTh: "เดอะมูน", number: 18 },
-    { id: "19", name: "The Sun", nameTh: "เดอะซัน", number: 19 },
-    { id: "20", name: "Judgement", nameTh: "จัดจ์เมนท์", number: 20 },
-    { id: "21", name: "The World", nameTh: "เดอะเวิลด์", number: 21 },
+    { id: "the_fool", name: "The Fool", nameTh: "เดอะฟูล (คนโง่)", number: 0 },
+    { id: "the_magician", name: "The Magician", nameTh: "เดอะเมจิเชี่ยน (นักเวทย์)", number: 1 },
+    { id: "the_high_priestess", name: "The High Priestess", nameTh: "เดอะไฮพรีสเตส (หญิงสงฆ์สูง)", number: 2 },
+    { id: "the_empress", name: "The Empress", nameTh: "ดิเอมเพรส (จักรพรรดินี)", number: 3 },
+    { id: "the_emperor", name: "The Emperor", nameTh: "ดิเอ็มเพอร์เรอร์ (จักรพรรดิ)", number: 4 },
+    { id: "the_hierophant", name: "The Hierophant", nameTh: "เดอะไฮเออโรแฟนต์ (สังฆราช)", number: 5 },
+    { id: "the_lovers", name: "The Lovers", nameTh: "เดอะเลิฟเวอร์ส (คู่รัก)", number: 6 },
+    { id: "the_chariot", name: "The Chariot", nameTh: "เดอะแชริออต (รถศึก)", number: 7 },
+    { id: "strength", name: "Strength", nameTh: "สเตรงท์ (ความแข็งแกร่ง)", number: 8 },
+    { id: "the_hermit", name: "The Hermit", nameTh: "เดอะเฮอร์มิต (ผู้สันโดษ)", number: 9 },
+    { id: "wheel_of_fortune", name: "Wheel of Fortune", nameTh: "วีลออฟฟอร์จูน (ล้อแห่งโชคชะตา)", number: 10 },
+    { id: "justice", name: "Justice", nameTh: "จัสติส (ความยุติธรรม)", number: 11 },
+    { id: "the_hanged_man", name: "The Hanged Man", nameTh: "เดอะแฮงด์แมน (คนถูกแขวน)", number: 12 },
+    { id: "death", name: "Death", nameTh: "เดธ (ความตาย)", number: 13 },
+    { id: "temperance", name: "Temperance", nameTh: "เทมเพอแรนซ์ (ความพอดี)", number: 14 },
+    { id: "the_devil", name: "The Devil", nameTh: "เดอะเดวิล (ปีศาจ)", number: 15 },
+    { id: "the_tower", name: "The Tower", nameTh: "เดอะทาวเวอร์ (หอคอย)", number: 16 },
+    { id: "the_star", name: "The Star", nameTh: "เดอะสตาร์ (ดวงดาว)", number: 17 },
+    { id: "the_moon", name: "The Moon", nameTh: "เดอะมูน (ดวงจันทร์)", number: 18 },
+    { id: "the_sun", name: "The Sun", nameTh: "เดอะซัน (ดวงอาทิตย์)", number: 19 },
+    { id: "judgement", name: "Judgement", nameTh: "จัดเมนต์ (การตัดสิน)", number: 20 },
+    { id: "the_world", name: "The World", nameTh: "เดอะเวิลด์ (โลก)", number: 21 },
   ];
 
   return majorArcana.map((card) => ({
     ...card,
     arcana: "major" as const,
-    imageUrl: `/cards/${card.id}.jpg`,
+    imageUrl: `/cards/${card.id}.png`,
     meaningUpright: "",
     meaningReversed: "",
     keywords: [],
@@ -147,6 +147,16 @@ export default function EnhancedCardSelection({
       const sessionId = localStorage.getItem('tarot_session_id') || `sess_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       localStorage.setItem('tarot_session_id', sessionId);
       
+      // Prepare selected cards for API - USE THE CARDS USER ACTUALLY SELECTED!
+      const selectedCardsForApi = selectedCards.map((card, index) => ({
+        card_id: card.id,  // e.g., "the_fool", "the_star"
+        is_reversed: card.isReversed,
+        position: index
+      }));
+      
+      console.log('=== SENDING SELECTED CARDS TO API ===');
+      console.log('Selected cards:', selectedCardsForApi);
+      
       const response = await fetch(`${apiUrl}/api/v1/draw-cards`, {
         method: 'POST',
         headers: {
@@ -158,6 +168,7 @@ export default function EnhancedCardSelection({
           spread_type: initialSpreadType,
           question,
           language: 'th',
+          selected_cards: selectedCardsForApi,  // SEND ACTUAL USER SELECTIONS!
         }),
       });
 

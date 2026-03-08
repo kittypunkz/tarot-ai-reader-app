@@ -21,7 +21,7 @@ export default function CardSelectionWrapper() {
 
   // Get query parameters
   const question = searchParams.get("q") || "";
-  const spreadType = (searchParams.get("spread") as SpreadType) || "single";
+  const spreadType = (searchParams.get("spread") as string) || "single";
   const questionType = searchParams.get("type") || "";
 
   // Validate parameters

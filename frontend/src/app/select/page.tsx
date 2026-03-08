@@ -7,7 +7,7 @@
 
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useCallback } from "react";
-import { EnhancedCardSelection } from "@/components/EnhancedCardSelection";
+import EnhancedCardSelection from "@/components/EnhancedCardSelection";
 import { SelectedCard } from "@/lib/types";
 import { drawCards, storeReading, SpreadType } from "@/lib/api";
 import { ArrowLeft, Loader2 } from "lucide-react";

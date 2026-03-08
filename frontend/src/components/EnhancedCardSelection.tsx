@@ -16,6 +16,7 @@ import {
   SelectedCard,
   SpreadType as SpreadTypeType,
 } from "@/lib/types";
+import { DrawnCard } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 // Mock spread types - in real app, fetch from API

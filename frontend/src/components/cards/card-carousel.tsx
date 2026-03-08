@@ -32,7 +32,7 @@ export function CardCarousel({
   const [velocity, setVelocity] = useState(0);
   const [hasDragged, setHasDragged] = useState(false);
   
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // Track window size
@@ -172,7 +172,7 @@ export function CardCarousel({
   // Get cards to render (duplicate for infinite effect)
   const getRenderCards = () => {
     // Render cards multiple times for seamless infinite scroll
-    const result = [];
+    const result: {card: TarotCard; globalIndex: number; actualIndex: number}[] = [];
     const repetitions = 3; // Render 3 sets for seamless loop
     
     for (let r = 0; r < repetitions; r++) {

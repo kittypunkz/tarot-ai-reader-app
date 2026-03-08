@@ -32,13 +32,24 @@ class AIInterpreter:
         Returns:
             dict with 'interpretation' (English) and 'interpretation_th' (Thai)
         """
+        print(f"\n{'='*60}")
+        print(f"AI INTERPRETATION REQUEST")
+        print(f"{'='*60}")
+        print(f"Model: {self.model}")
+        print(f"Question: {question}")
+        print(f"Cards to interpret ({len(cards)}):")
+        for i, card in enumerate(cards):
+            print(f"  {i+1}. {card.card_name_th} ({card.card_name}) - {card.orientation.value}")
+        print(f"{'='*60}\n")
+        
         if not self.api_key:
-            # Fallback if no API key
+            print("ERROR: No API key found!")
             return self._generate_fallback_interpretation(cards, language)
         
         try:
             # Build the prompt with explicit card list
             prompt = self._build_prompt(question, cards, spread_type, language)
+            print(f"Prompt sent to AI:\n{prompt[:500]}...")
             
             # Call OpenRouter API
             async with httpx.AsyncClient(timeout=60.0) as client:

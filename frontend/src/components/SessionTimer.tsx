@@ -46,7 +46,7 @@ function useIsClient() {
 export function SessionTimer({
   sessionId: _sessionId,
   createdAt,
-  expirationMinutes = 30,
+  expirationMinutes = 1440, // 24 hours for testing
   onExpired,
   className,
 }: SessionTimerProps) {
@@ -140,7 +140,7 @@ export function SessionTimer({
 // Simplified version for compact display
 export function SessionTimerCompact({
   createdAt,
-  expirationMinutes = 30,
+  expirationMinutes = 1440, // 24 hours for testing
   className,
 }: Omit<SessionTimerProps, 'sessionId' | 'onExpired'>) {
   const isClient = useIsClient();

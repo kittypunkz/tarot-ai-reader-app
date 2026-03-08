@@ -163,7 +163,7 @@ export function ReadingResult({
           <SessionTimer
             sessionId={sessionId}
             createdAt={createdAt}
-            expirationMinutes={30}
+            expirationMinutes={1440} // 24 hours for testing
             onExpired={handleSessionExpired}
           />
         </header>

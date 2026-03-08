@@ -130,7 +130,7 @@ export default function FollowUpDemoPage() {
           <SessionTimer
             sessionId={demoSessionId}
             createdAt={demoCreatedAt}
-            expirationMinutes={30}
+            expirationMinutes={1440} // 24 hours for testing
             onExpired={handleSessionExpired}
           />
         </div>

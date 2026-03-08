@@ -66,6 +66,18 @@
 
 **Description:** Implement follow-up question feature allowing users to ask up to 3 follow-up questions per session with context-aware responses.
 
+**⚙️ Testing Configuration:**
+- Session timeout: **24 hours** (configured via `SESSION_TIMEOUT_MINUTES` env var)
+- Backend: `SESSION_TIMEOUT_MINUTES=1440` in `.env`
+- Frontend: All timers set to 1440 minutes (24 hours)
+- This allows extended testing without session expiration
+
+**Real Data Integration:**
+- ✅ 22 Major Arcana cards with Thai/English meanings
+- ✅ Real card meanings for upright and reversed orientations
+- ✅ Cryptographically secure random card drawing
+- ✅ All readings saved to database with full card data
+
 **Backend APIs Implemented:**
 - ✅ `POST /api/v1/follow-up` - Create follow-up question
 - ✅ `GET /api/v1/sessions/{session_id}/history` - Get session history

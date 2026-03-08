@@ -113,7 +113,7 @@ export function useFollowUpStatus(
     
     const created = new Date(createdAt).getTime();
     const now = Date.now();
-    const expirationMs = 30 * 60 * 1000; // 30 minutes
+    const expirationMs = 1440 * 60 * 1000; // 24 hours for testing
     const elapsed = now - created;
     const remaining = Math.max(0, expirationMs - elapsed);
     

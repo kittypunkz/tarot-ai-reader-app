@@ -315,7 +315,9 @@ async def create_follow_up(
                 detail={"status": "error", "message": "ไม่พบเซสชัน"}
             )
         
-        # Check session expiration (30 minutes)
+        # Check session expiration (configurable, default 30 minutes, set to 24 hours for testing)
+        SESSION_TIMEOUT_MINUTES = int(os.getenv("SESSION_TIMEOUT_MINUTES", "1440"))  # 24 hours default for testing
+        
         # Ensure we're comparing timezone-aware datetimes
         now = datetime.now(timezone.utc)
         last_activity = session.last_activity
@@ -323,7 +325,7 @@ async def create_follow_up(
             # If last_activity is naive, assume it's UTC
             last_activity = last_activity.replace(tzinfo=timezone.utc)
         
-        if now - last_activity > timedelta(minutes=30):
+        if now - last_activity > timedelta(minutes=SESSION_TIMEOUT_MINUTES):
             session.status = "expired"
             db.commit()
             raise HTTPException(

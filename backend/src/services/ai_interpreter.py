@@ -16,7 +16,7 @@ class AIInterpreter:
     
     def __init__(self):
         self.api_key = os.getenv("OPENROUTER_API_KEY")
-        self.model = os.getenv("OPENROUTER_MODEL", "google/gemma-2-9b-it:free")
+        self.model = os.getenv("OPENROUTER_MODEL", "openai/gpt-4o-mini")
         self.app_url = os.getenv("APP_URL", "http://localhost:3000")
     
     async def generate_interpretation(

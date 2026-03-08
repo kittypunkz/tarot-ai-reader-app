@@ -60,7 +60,7 @@
 
 ---
 
-## 💬 TASK-006: Follow-up Questions (US-003) 🚧 IN PROGRESS
+## 💬 TASK-006: Follow-up Questions (US-003) ✅ COMPLETE
 
 **Reference:** "TASK-006" or "follow-up" or "US-003"
 
@@ -78,17 +78,31 @@
 - ✅ Updated `Session` model with `follow_up_count`
 - ✅ Relationships between Session, Reading, and Interaction
 
-**Pending:**
-- 📝 Frontend UI for follow-up input
-- 📝 Frontend display of session history
-- 📝 Integration with AI for context-aware responses
-- 📝 UI for showing remaining follow-ups
+**Frontend Components:**
+- ✅ `ReadingActions` - 3 action buttons (ถามต่อ, เปิดใหม่, จบการดู)
+- ✅ `FollowUpInput` - Follow-up question input with context
+- ✅ `MiniCardPreview` - Show previous cards in follow-up
+- ✅ `SessionTimer` - Countdown timer with expiration warning
+- ✅ `ReadingResult` - Main result page with follow-up integration
+
+**Pages Created:**
+- ✅ `app/page.tsx` - Question input (US-001)
+- ✅ `app/select/page.tsx` - Card selection (US-002)
+- ✅ `app/result/page.tsx` - Reading result with follow-up (US-003)
+
+**Hooks:**
+- ✅ `useFollowUp` - Submit follow-up questions
+- ✅ `useSessionHistory` - Fetch session history
+- ✅ `useFollowUpStatus` - Check follow-up availability
 
 **Files:**
 - ✅ `backend/src/main.py` - Follow-up endpoints
 - ✅ `backend/src/database/models.py` - Interaction model
 - ✅ `backend/src/models/schemas.py` - FollowUpRequest/Response schemas
-- 📝 `frontend/src/components/FollowUpInput.tsx` - To be implemented
+- ✅ `frontend/src/components/FollowUpInput.tsx`
+- ✅ `frontend/src/components/ReadingActions.tsx`
+- ✅ `frontend/src/components/ReadingResult.tsx`
+- ✅ `frontend/src/hooks/useFollowUp.ts`
 
 ---
 

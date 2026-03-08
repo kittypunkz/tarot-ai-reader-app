@@ -90,19 +90,21 @@
 
 ## 🔄 Epic 2: User Engagement
 
-### US-003: Follow-up Questions 🚧
-**Status:** In Progress | **Priority:** P1 | **Sprint:** 3
+### US-003: Follow-up Questions ✅
+**Status:** Done | **Priority:** P1 | **Sprint:** 3
 
 **As a** tarot seeker  
 **I want** to ask follow-up questions about my reading  
 **So that** I can dive deeper into the guidance
 
 **Key Features:**
-- Context-aware responses
-- Session continuity
-- Up to 3 follow-ups per reading
+- ✅ Context-aware responses
+- ✅ Session continuity
+- ✅ Up to 3 follow-ups per reading
+- ✅ Session timer with expiration warning
+- ✅ Mini card preview for context
 
-**[Full Details →](./user-stories/US-003-followup.md)** *(Draft)*
+**[Full Details →](./user-stories/US-003-followup.md)**
 
 ---
 
@@ -234,8 +236,8 @@
 - US-002-ENHANCE: Interactive Carousel
 - Bug fixes & polish
 
-### Sprint 3 (Current) 🚧
-- US-003: Follow-up Questions (backend APIs done, frontend pending)
+### Sprint 3 (Complete) ✅
+- US-003: Follow-up Questions (COMPLETE)
 - US-010: Analytics (partial)
 
 ### Backlog 📦
@@ -265,9 +267,21 @@
 | In Progress | 1 |
 | Planned | 1 |
 | Draft/Backlog | 4 |
-| **Completion** | **50%** |
+| **Completion** | **60%** |
 
 ---
 
 Last updated: 2026-03-08  
 Next review: 2026-03-15
+
+---
+
+## 🎉 Recent Updates
+
+### 2026-03-08: TASK-006 Complete - US-003 Follow-up Questions
+- ✅ All backend APIs implemented
+- ✅ All frontend components created
+- ✅ Main app pages (/, /select, /result) created
+- ✅ Full follow-up flow working end-to-end
+- ✅ Session timer with expiration warning
+- ✅ Follow-up history displayed inline

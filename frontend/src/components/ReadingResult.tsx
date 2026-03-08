@@ -8,6 +8,7 @@ import { SessionTimer } from './SessionTimer';
 import { ReadingActions, ActionType } from './ReadingActions';
 import { FollowUpInput } from './FollowUpInput';
 import { MiniCardPreview } from './MiniCardPreview';
+import { CardGrid } from './CardDisplay';
 import { SelectedCard } from '@/lib/types';
 import { FollowUpResponse } from '@/lib/api';
 
@@ -187,9 +188,9 @@ export function ReadingResult({
                   </p>
                 </div>
 
-                {/* Cards Display */}
+                {/* Cards Display - Real Card Data */}
                 <div className="p-6 bg-indigo-900/30 rounded-2xl border border-amber-600/20">
-                  <MiniCardPreview
+                  <CardGrid
                     cards={cards}
                     positions={positions}
                   />

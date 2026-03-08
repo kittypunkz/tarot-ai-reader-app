@@ -174,11 +174,21 @@ export default function EnhancedCardSelection({
 
       const result = await response.json();
       
+      // Debug: Log the real card data from API
+      console.log('=== REAL CARD DATA FROM API ===');
+      console.log('Reading ID:', result.reading_id);
+      console.log('Cards drawn:', result.cards.map((c: DrawnCard) => ({
+        id: c.card_id,
+        name: c.card_name_th,
+        orientation: c.orientation,
+        meaning: c.meaning_th?.substring(0, 50) + '...'
+      })));
+      
       // Store reading data for the result page
       localStorage.setItem('tarot_current_reading', JSON.stringify(result));
       
-      // Navigate to result page
-      router.push('/result');
+      // Navigate to result page with reading_id
+      router.push(`/result?reading_id=${result.reading_id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "เกิดข้อผิดพลาด");
       setIsSubmitting(false);

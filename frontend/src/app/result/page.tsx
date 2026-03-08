@@ -12,6 +12,17 @@ import { ReadingResult } from "@/components/ReadingResult";
 import { getStoredReading, getReading, DrawCardsResponse } from "@/lib/api";
 import { SelectedCard } from "@/lib/types";
 import { Loader2, AlertCircle } from "lucide-react";
+import { CardGrid } from "@/components/CardDisplay";
+
+// Extract card number from card_id (e.g., "the_fool" -> 0, "the_magician" -> 1)
+const cardNumberMap: Record<string, number> = {
+  "the_fool": 0, "the_magician": 1, "the_high_priestess": 2, "the_empress": 3,
+  "the_emperor": 4, "the_hierophant": 5, "the_lovers": 6, "the_chariot": 7,
+  "strength": 8, "the_hermit": 9, "wheel_of_fortune": 10, "justice": 11,
+  "the_hanged_man": 12, "death": 13, "temperance": 14, "the_devil": 15,
+  "the_tower": 16, "the_star": 17, "the_moon": 18, "the_sun": 19,
+  "judgement": 20, "the_world": 21
+};
 
 // Convert API cards to SelectedCard format
 function convertCards(reading: DrawCardsResponse): SelectedCard[] {
@@ -19,7 +30,7 @@ function convertCards(reading: DrawCardsResponse): SelectedCard[] {
     id: card.card_id,
     name: card.card_name,
     nameTh: card.card_name_th,
-    number: parseInt(card.card_id) || index + 1,
+    number: cardNumberMap[card.card_id] ?? index,
     arcana: "major" as const,
     imageUrl: card.image_url || `/cards/${card.card_id}.jpg`,
     meaningUpright: card.meaning,
@@ -43,10 +54,19 @@ function ResultContent() {
   useEffect(() => {
     async function loadReading() {
       try {
+        console.log('=== LOADING READING ===');
+        console.log('Reading ID from URL:', readingId);
+        
         // First try to get from localStorage
         const stored = getStoredReading();
+        console.log('Stored reading:', stored ? {
+          id: stored.reading_id,
+          cards: stored.cards?.length,
+          firstCard: stored.cards?.[0]?.card_name_th
+        } : 'null');
         
         if (stored && (!readingId || stored.reading_id === readingId)) {
+          console.log('Using stored reading from localStorage');
           setReading(stored);
           setLoading(false);
           return;
@@ -54,8 +74,14 @@ function ResultContent() {
         
         // If not in localStorage or different reading_id, fetch from API
         if (readingId) {
+          console.log('Fetching from API...');
           const fetched = await getReading(readingId);
           if (fetched) {
+            console.log('Fetched from API:', {
+              id: fetched.reading_id,
+              cards: fetched.cards?.length,
+              firstCard: fetched.cards?.[0]?.card_name_th
+            });
             setReading(fetched);
           } else {
             setError("ไม่พบผลการอ่านไพ่");

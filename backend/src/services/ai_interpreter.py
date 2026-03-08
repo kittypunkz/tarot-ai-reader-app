@@ -5,6 +5,7 @@ Generates tarot reading interpretations using OpenRouter API
 
 import os
 import httpx
+import re
 from typing import List
 from src.data.tarot_cards import TarotCard, get_card_by_id
 from src.models.schemas import DrawnCard, SpreadType
@@ -36,7 +37,7 @@ class AIInterpreter:
             return self._generate_fallback_interpretation(cards, language)
         
         try:
-            # Build the prompt
+            # Build the prompt with explicit card list
             prompt = self._build_prompt(question, cards, spread_type, language)
             
             # Call OpenRouter API
@@ -54,15 +55,15 @@ class AIInterpreter:
                         "messages": [
                             {
                                 "role": "system",
-                                "content": self._get_system_prompt(language)
+                                "content": self._get_system_prompt(language, cards)
                             },
                             {
                                 "role": "user",
                                 "content": prompt
                             }
                         ],
-                        "temperature": 0.7,
-                        "max_tokens": 800
+                        "temperature": 0.3,  # Lower temperature for more strictness
+                        "max_tokens": 1000
                     }
                 )
                 
@@ -73,8 +74,13 @@ class AIInterpreter:
                 data = response.json()
                 ai_response = data["choices"][0]["message"]["content"]
                 
-                # Parse the response (expecting both Thai and English)
-                return self._parse_ai_response(ai_response, language)
+                print(f"=== RAW AI RESPONSE ===")
+                print(ai_response[:500])
+                
+                # Validate AI response - check if it mentions cards not in the list
+                validated_response = self._validate_ai_response(ai_response, cards, language)
+                
+                return validated_response
                 
         except Exception as e:
             print(f"Error generating interpretation: {e}")
@@ -89,98 +95,148 @@ class AIInterpreter:
     ) -> str:
         """Build the prompt for the AI"""
         
-        # Build cards description - ONLY the actual cards drawn
-        cards_desc = []
+        # Build EXACT card list - AI must use ONLY these
+        cards_list = []
         for i, card in enumerate(cards):
-            position = card.position_name_th if language == "th" else card.position_name
-            card_name = card.card_name_th if language == "th" else card.card_name
+            pos = card.position_name_th if language == "th" else card.position_name
+            name = card.card_name_th if language == "th" else card.card_name
             orientation = "กลับหัว" if card.orientation.value == "reversed" and language == "th" else \
                          "reversed" if card.orientation.value == "reversed" else \
                          "หงายหน้า" if language == "th" else "upright"
             meaning = card.meaning_th if language == "th" else card.meaning
             
-            cards_desc.append(f"""{position}: {card_name} ({orientation})
-ความหมาย: {meaning}""")
+            cards_list.append(f"{i+1}. {pos}: {name} ({orientation}) - {meaning[:100]}...")
         
-        cards_text = "\n\n".join(cards_desc)
+        cards_text = "\n".join(cards_list)
+        card_count = len(cards)
         
         if language == "th":
-            return f"""คุณเป็นหมอดูไพ่ทาโรต์ ผู้ใช้ถามคำถามและเปิดไพ่ได้ {len(cards)} ใบตามที่ระบุด้านล่างนี้เท่านั้น
+            return f"""คำถาม: "{question}"
 
-คำถาม: "{question}"
-
-ไพ่ที่เปิดได้ ({len(cards)} ใบ):
+ไพ่ที่เปิดได้ ({card_count} ใบ) - ใช้เฉพาะไพ่เหล่านี้เท่านั้น:
 {cards_text}
 
-สิ่งสำคัญ:
-- ทำนายจากไพ่ {len(cards)} ใบนี้เท่านั้น ห้ามเพิ่มไพ่หรือตำแหน่งที่ไม่มีในรายการ
-- อธิบายความหมายของไพ่แต่ละใบ
-- เชื่อมโยงไพ่เข้าด้วยกันเป็นคำทำนายที่สมบูรณ์
-- ตอบคำถามของผู้ถามอย่างตรงประเด็น
+คำสั่งสำคัญ:
+1. ทำนายจากไพ่ {card_count} ใบข้างต้นเท่านั้น
+2. ห้ามเพิ่มไพ่หรือตำแหน่งอื่นเด็ดขาด
+3. อธิบายความหมายของแต่ละใบตามตำแหน่ง
+4. เชื่อมโยงเป็นคำทำนายที่สมบูรณ์
+5. ตอบคำถาม: "{question}"
 
-กรุณาตอบเป็นภาษาไทยก่อน แล้วตามด้วยภาษาอังกฤษ คั่นด้วย ---
+รูปแบบคำตอบ:
+**ตำแหน่งที่ 1: ชื่อไพ่ (ทิศทาง)**
+อธิบายความหมายของไพ่ใบนี้ในตำแหน่งนี้
 
-รูปแบบ:
-[คำทำนายภาษาไทย]
+[ทำนายต่อไปสำหรับไพ่ใบอื่นๆ ถ้ามี]
 
----
+**คำทำนายโดยรวม:**
+[เชื่อมโยงทั้งหมดและตอบคำถาม]
 
-[English interpretation]"""
+**คำแนะนำ:**
+[ข้อแนะนำเฉพาะเจาะจง]"""
         else:
-            return f"""You are a tarot reader. The user asked a question and drew exactly {len(cards)} cards as listed below ONLY.
+            return f"""Question: "{question}"
 
-Question: "{question}"
-
-Drawn Cards ({len(cards)} cards):
+Drawn Cards ({card_count} cards) - Use ONLY these cards:
 {cards_text}
 
-Important:
-- Interpret ONLY these {len(cards)} cards
-- Do NOT add cards or positions not in the list
-- Explain each card's meaning
-- Weave cards into a coherent reading
-- Directly address the question
+Important Instructions:
+1. Interpret ONLY the {card_count} cards listed above
+2. Do NOT add any other cards or positions
+3. Explain each card's meaning in its position
+4. Weave into a complete reading
+5. Answer the question: "{question}"
 
-Respond in English first, then Thai, separated by ---
+Response Format:
+**Position 1: Card Name (orientation)**
+Explain this card's meaning in this position
 
-Format:
-[English interpretation]
+[Continue for other cards if any]
 
----
+**Overall Reading:**
+[Connect all cards and answer the question]
 
-[คำทำนายภาษาไทย]"""
+**Advice:**
+[Specific actionable advice]"""
     
-    def _get_system_prompt(self, language: str) -> str:
+    def _get_system_prompt(self, language: str, cards: List[DrawnCard]) -> str:
         """Get the system prompt for the AI"""
+        card_names = ", ".join([c.card_name_th for c in cards])
+        
         if language == "th":
-            return """คุณเป็นหมอดูไพ่ทาโรต์ผู้เชี่ยวชาญที่มีประสบการณ์มากกว่า 20 ปี 
-คุณให้คำทำนายที่ลึกซึ้ง แต่เข้าใจง่าย และให้คำแนะนำที่เป็นประโยชน์และปฏิบัติได้จริง
-คุณเคารพความเป็นส่วนตัวและให้คำทำนายที่สร้างสรรค์ ไม่ทำให้ผู้ถามกลัวหรือกังวลเกินไป"""
+            return f"""คุณเป็นหมอดูไพ่ทาโรต์มืออาชีพ
+
+กฎสำคัญ:
+- ไพ่ที่มีให้ interprete คือ: {card_names} เท่านั้น
+- ห้ามเพิ่มไพ่อื่นโดยเด็ดขาด
+- ถ้ามี 1 ใบ ตอบแค่ 1 ใบ
+- ถ้ามี 3 ใบ ตอบแค่ 3 ใบ
+- ไม่มีข้อยกเว้น"""
         else:
-            return """You are an expert tarot reader with over 20 years of experience.
-You provide deep yet understandable readings with practical, actionable advice.
-You respect privacy and give constructive readings without causing unnecessary fear or worry."""
+            return f"""You are a professional tarot reader
+
+Important Rules:
+- Cards to interpret: {card_names} ONLY
+- Do NOT add any other cards
+- If 1 card, answer for 1 card only
+- If 3 cards, answer for 3 cards only  
+- No exceptions"""
+    
+    def _validate_ai_response(self, response: str, cards: List[DrawnCard], language: str) -> dict:
+        """Validate AI response and fix if hallucinating"""
+        
+        # Get list of actual card names
+        actual_card_names = set()
+        for card in cards:
+            actual_card_names.add(card.card_name.lower())
+            actual_card_names.add(card.card_name_th.lower())
+        
+        # Check if AI mentioned cards not in the list
+        lines = response.split('\n')
+        valid_lines = []
+        found_cards = []
+        
+        for line in lines:
+            line_lower = line.lower()
+            # Check if line mentions a card
+            for card in cards:
+                if card.card_name.lower() in line_lower or card.card_name_th.lower() in line_lower:
+                    found_cards.append(card.card_name)
+                    valid_lines.append(line)
+                    break
+            else:
+                # Line doesn't mention any card - could be intro/outro
+                # Keep it if it's general text
+                if not any(name in line_lower for name in ['the lovers', 'wheel of fortune', 'death', 'the magician'] if name not in actual_card_names):
+                    valid_lines.append(line)
+        
+        print(f"=== VALIDATION ===")
+        print(f"Actual cards: {[c.card_name for c in cards]}")
+        print(f"Cards found in AI response: {found_cards}")
+        
+        # If AI hallucinated different cards, use fallback
+        if len(found_cards) != len(cards):
+            print(f"AI HALLUCINATION DETECTED! Expected {len(cards)} cards, found {len(found_cards)}")
+            return self._generate_fallback_interpretation(cards, language)
+        
+        # Split into Thai and English
+        return self._parse_ai_response(response, language)
     
     def _parse_ai_response(self, response: str, language: str) -> dict:
         """Parse the AI response into Thai and English parts"""
-        parts = response.split("---")
+        # Try to find separator
+        if "---" in response:
+            parts = response.split("---")
+            if len(parts) >= 2:
+                return {
+                    "interpretation": parts[1].strip() if language == "th" else parts[0].strip(),
+                    "interpretation_th": parts[0].strip() if language == "th" else parts[1].strip()
+                }
         
-        if len(parts) >= 2:
-            if language == "th":
-                thai_part = parts[0].strip()
-                english_part = parts[1].strip()
-            else:
-                english_part = parts[0].strip()
-                thai_part = parts[1].strip()
-        else:
-            # If no separator, use the same text for both
-            text = response.strip()
-            thai_part = text
-            english_part = text
-        
+        # No separator - use same text for both
         return {
-            "interpretation": english_part,
-            "interpretation_th": thai_part
+            "interpretation": response.strip(),
+            "interpretation_th": response.strip()
         }
     
     def _generate_fallback_interpretation(
@@ -188,33 +244,30 @@ You respect privacy and give constructive readings without causing unnecessary f
         cards: List[DrawnCard],
         language: str
     ) -> dict:
-        """Generate a fallback interpretation when AI is not available"""
+        """Generate interpretation from actual card meanings when AI fails"""
         
         if language == "th":
-            interpretation_th = "คำทำนายจากไพ่\n\n"
-            interpretation_en = "Tarot Reading\n\n"
-            
+            lines = []
             for card in cards:
-                position = card.position_name_th
+                pos = card.position_name_th
                 name = card.card_name_th
+                orientation = "กลับหัว" if card.orientation.value == "reversed" else "หงายหน้า"
                 meaning = card.meaning_th
-                
-                interpretation_th += f"{position}: {name}\n{meaning}\n\n"
-                interpretation_en += f"{card.position_name}: {card.card_name}\n{card.meaning}\n\n"
+                lines.append(f"**{pos}: {name} ({orientation})**\n{meaning}")
             
-            interpretation_th += "\nไพ่เหล่านี้แสดงถึงเส้นทางที่คุณกำลังเดินอยู่ และแนะนำให้คุณฟังเสียงสัญชาตญาณของตนเอง"
-            interpretation_en += "\nThese cards represent your current path and advise you to listen to your intuition."
-            
+            interpretation_th = "\n\n".join(lines)
+            interpretation_en = "Card reading:\n" + "\n".join([f"{c.position_name}: {c.card_name}" for c in cards])
         else:
-            interpretation_en = "Tarot Reading\n\n"
-            interpretation_th = "คำทำนาย\n\n"
-            
+            lines = []
             for card in cards:
-                interpretation_en += f"{card.position_name}: {card.card_name}\n{card.meaning}\n\n"
-                interpretation_th += f"{card.position_name_th}: {card.card_name_th}\n{card.meaning_th}\n\n"
+                pos = card.position_name
+                name = card.card_name
+                orientation = card.orientation.value
+                meaning = card.meaning
+                lines.append(f"**{pos}: {name} ({orientation})**\n{meaning}")
             
-            interpretation_en += "\nThese cards represent your current path and advise you to listen to your intuition."
-            interpretation_th += "\nไพ่เหล่านี้แสดงถึงเส้นทางที่คุณกำลังเดินอยู่"
+            interpretation_en = "\n\n".join(lines)
+            interpretation_th = "คำทำนาย:\n" + "\n".join([f"{c.position_name_th}: {c.card_name_th}" for c in cards])
         
         return {
             "interpretation": interpretation_en,

@@ -238,7 +238,7 @@ class CardDrawingService:
         print(f"Number of cards: {len(drawn_cards)}")
         print(f"Cards: {[c.card_name_th for c in drawn_cards]}")
         
-        # Generate AI interpretation
+        # Generate AI interpretation with validation
         interpreter = get_interpreter()
         interpretation_result = await interpreter.generate_interpretation(
             question=request.question,
@@ -247,7 +247,9 @@ class CardDrawingService:
             language=request.language
         )
         
-        print(f"Interpretation (first 100 chars): {interpretation_result['interpretation_th'][:100]}...")
+        print(f"=== FINAL INTERPRETATION ===")
+        print(f"TH: {interpretation_result['interpretation_th'][:200]}...")
+        print(f"EN: {interpretation_result['interpretation'][:200]}...")
         
         # Save to database with interpretation
         await self._save_reading(

@@ -111,15 +111,18 @@ interface CardGridProps {
 export function CardGrid({ cards, positions, className }: CardGridProps) {
   if (!cards || cards.length === 0) return null;
   
+  // Determine grid columns based on card count
+  let gridCols = "grid-cols-1 justify-items-center";
+  if (cards.length === 2) {
+    gridCols = "grid-cols-2";
+  } else if (cards.length === 3) {
+    gridCols = "grid-cols-3";
+  } else if (cards.length >= 4) {
+    gridCols = "grid-cols-2 sm:grid-cols-3 md:grid-cols-4";
+  }
+  
   return (
-    <div className={cn(
-      "grid gap-6",
-      cards.length === 1 ? "grid-cols-1 justify-items-center" :
-      cards.length === 2 ? "grid-cols-2" :
-      cards.length === 3 ? "grid-cols-3" :
-      "grid-cols-2 sm:grid-cols-3 md:grid-cols-4",
-      className
-    ))}>
+    <div className={cn("grid gap-6", gridCols, className)}>
       {cards.map((card, index) => (
         <CardDisplay
           key={card.id}

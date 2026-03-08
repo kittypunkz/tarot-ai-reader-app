@@ -170,6 +170,8 @@ class DrawCardsResponse(BaseModel):
     spread: SpreadInfo
     cards: List[DrawnCard]
     question: str
+    interpretation: Optional[str] = Field(None, description="AI interpretation (English)")
+    interpretation_th: Optional[str] = Field(None, description="AI interpretation (Thai)")
     created_at: str = Field(..., description="ISO timestamp")
 
 

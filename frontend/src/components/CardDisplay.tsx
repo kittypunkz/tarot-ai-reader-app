@@ -16,6 +16,9 @@ export function CardDisplay({
   showMeaning = true,
   className 
 }: CardDisplayProps) {
+  // DEBUG
+  console.log('CardDisplay rendering:', {id: card.id, nameTh: card.nameTh, isReversed: card.isReversed});
+  
   return (
     <div className={cn(
       "flex flex-col items-center",

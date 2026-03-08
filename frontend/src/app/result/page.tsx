@@ -9,7 +9,7 @@
 import { useSearchParams, useRouter } from "next/navigation";
 import { Suspense, useEffect, useState } from "react";
 import { ReadingResult } from "@/components/ReadingResult";
-import { getStoredReading, getReading, DrawCardsResponse } from "@/lib/api";
+import { getStoredReading, getReading, DrawCardsResponse, DrawnCard } from "@/lib/api";
 import { SelectedCard } from "@/lib/types";
 import { Loader2, AlertCircle } from "lucide-react";
 import { CardGrid } from "@/components/CardDisplay";
@@ -57,37 +57,32 @@ function ResultContent() {
         console.log('=== LOADING READING ===');
         console.log('Reading ID from URL:', readingId);
         
-        // First try to get from localStorage
-        const stored = getStoredReading();
-        console.log('Stored reading:', stored ? {
-          id: stored.reading_id,
-          cards: stored.cards?.length,
-          firstCard: stored.cards?.[0]?.card_name_th
-        } : 'null');
-        
-        if (stored && (!readingId || stored.reading_id === readingId)) {
-          console.log('Using stored reading from localStorage');
-          setReading(stored);
-          setLoading(false);
-          return;
-        }
-        
-        // If not in localStorage or different reading_id, fetch from API
+        // ALWAYS fetch from API if we have a reading_id to ensure correct data
         if (readingId) {
-          console.log('Fetching from API...');
+          console.log('Fetching from API (reading_id provided)...');
           const fetched = await getReading(readingId);
           if (fetched) {
             console.log('Fetched from API:', {
               id: fetched.reading_id,
-              cards: fetched.cards?.length,
-              firstCard: fetched.cards?.[0]?.card_name_th
+              cards: fetched.cards?.map((c: DrawnCard) => c.card_name_th)
             });
             setReading(fetched);
-          } else {
-            setError("ไม่พบผลการอ่านไพ่");
+            setLoading(false);
+            return;
           }
+        }
+        
+        // Fallback to localStorage only if no reading_id or API failed
+        const stored = getStoredReading();
+        console.log('Fallback to localStorage:', stored ? {
+          id: stored.reading_id,
+          cards: stored.cards?.map((c: DrawnCard) => c.card_name_th)
+        } : 'null');
+        
+        if (stored) {
+          setReading(stored);
         } else {
-          setError("ไม่พบรหัสการอ่าน");
+          setError("ไม่พบผลการอ่านไพ่");
         }
       } catch (err) {
         console.error("Failed to load reading:", err);
@@ -135,6 +130,11 @@ function ResultContent() {
   
   const cards = convertCards(reading);
   const positions = reading.spread.positions_th || reading.spread.positions;
+  
+  // DEBUG: Show exactly what cards we're displaying
+  console.log('=== CARDS BEING DISPLAYED ===');
+  console.log('Raw API cards:', reading.cards.map(c => ({id: c.card_id, name: c.card_name_th, orientation: c.orientation})));
+  console.log('Converted cards:', cards.map(c => ({id: c.id, name: c.nameTh, isReversed: c.isReversed})));
   
   // Use AI interpretation from API response
   console.log('AI Interpretation:', {

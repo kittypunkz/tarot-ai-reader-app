@@ -1,0 +1,51 @@
+name: Database Migration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/src/database/**'
+      - 'backend/alembic/**'
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    name: Run Database Migrations
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: 'pip'
+          cache-dependency-path: './backend/requirements.txt'
+      
+      - name: Install dependencies
+        working-directory: ./backend
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install alembic psycopg2-binary
+      
+      - name: Run Alembic migrations
+        working-directory: ./backend
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+        run: |
+          alembic upgrade head
+      
+      - name: Verify migration
+        working-directory: ./backend
+        env:
+          DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        run: |
+          python -c "
+          from src.database.database import engine
+          from src.database.models import Base
+          print('✅ Database connection successful')
+          print(f'Tables: {list(Base.metadata.tables.keys())}')
+          "

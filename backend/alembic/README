@@ -1,0 +1,16 @@
+Alembic Database Migrations
+
+Generate migration:
+    alembic revision --autogenerate -m "Description"
+
+Run migrations:
+    alembic upgrade head
+
+Rollback one migration:
+    alembic downgrade -1
+
+View current version:
+    alembic current
+
+View history:
+    alembic history --verbose

@@ -44,7 +44,8 @@ class GatekeeperService:
         self,
         question: str,
         language: str = "th",
-        session_id: Optional[str] = None
+        session_id: Optional[str] = None,
+        context: Optional[str] = None
     ) -> ValidateQuestionResponse:
         """
         Validate a question through AI Gatekeeper
@@ -64,7 +65,7 @@ class GatekeeperService:
         # Step 2: AI-based validation (FOR ALL QUESTIONS)
         # This ensures smart detection of context
         try:
-            ai_result = await self._ai_validate(question, language)
+            ai_result = await self._ai_validate(question, language, context)
             await self._log_validation(session_id, question, ai_result)
             return ai_result
         except Exception as e:
@@ -75,6 +76,7 @@ class GatekeeperService:
                 reason=RejectionReason.UNCLEAR,
                 message="ไม่สามารถตรวจสอบคำถามได้ กรุณาลองใหม่อีกครั้ง" if language == "th" else "Unable to validate question. Please try again.",
                 suggestion="ลองถามใหม่ด้วยคำถามเกี่ยวกับชีวิต ความรัก การงาน หรือความสัมพันธ์" if language == "th" else "Try asking about life, love, career, or relationships",
+                suggested_spread=3,
             )
             await self._log_validation(session_id, question, fallback_result)
             return fallback_result
@@ -82,7 +84,8 @@ class GatekeeperService:
     async def _ai_validate(
         self,
         question: str,
-        language: str
+        language: str,
+        context: Optional[str] = None
     ) -> ValidateQuestionResponse:
         """
         AI-based validation using FREE Google model
@@ -103,7 +106,7 @@ class GatekeeperService:
                         "model": self.model,
                         "messages": [
                             {"role": "system", "content": system_prompt},
-                            {"role": "user", "content": f"Question: \"{question}\""}
+                            {"role": "user", "content": self._build_user_prompt(question, context)}
                         ],
                         "temperature": 0.1,  # Low temp for consistency
                         "max_tokens": 200,
@@ -205,6 +208,12 @@ Return ONLY JSON:
     "confidence": 0.0-1.0
 }"""
 
+    def _build_user_prompt(self, question: str, context: Optional[str] = None) -> str:
+        """Build user prompt with optional context for follow-up questions"""
+        if context:
+            return f"Context from previous reading: {context}\n\nFollow-up question: \"{question}\""
+        return f"Question: \"{question}\""
+
     def _parse_ai_response(self, result_text: str, language: str) -> ValidateQuestionResponse:
         """Parse AI response with flexible handling"""
         try:
@@ -251,6 +260,7 @@ Return ONLY JSON:
                 reason=RejectionReason.UNCLEAR,
                 message="ไม่สามารถตรวจสอบคำถามได้ กรุณาลองใหม่อีกครั้ง" if language == "th" else "Unable to validate. Please try again.",
                 suggestion="ลองถามใหม่ด้วยคำถามที่ชัดเจนกว่า" if language == "th" else "Try asking a clearer question",
+                suggested_spread=3,
             )
     
     def _create_rejected_response(
@@ -265,7 +275,8 @@ Return ONLY JSON:
             confidence=0.9,
             reason=RejectionReason.INAPPROPRIATE_CONTENT,
             message=message,
-            suggestion=suggestion
+            suggestion=suggestion,
+            suggested_spread=3,
         )
     
     async def _log_validation(

@@ -5,5 +5,6 @@ python-dotenv>=1.0.0
 httpx>=0.24.0
 sqlalchemy>=2.0.0
 alembic>=1.11.0
+psycopg2-binary>=2.9.0  # PostgreSQL driver
 pytest>=7.4.0
 pytest-asyncio>=0.21.0

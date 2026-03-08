@@ -1,0 +1,35 @@
+# Render.com deployment configuration
+# Import this file in Render Dashboard for one-click deployment
+
+services:
+  - type: web
+    name: tarot-backend
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: cd backend && uvicorn src.main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.0
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tarot-db
+          property: connectionString
+      - key: OPENROUTER_API_KEY
+        sync: false  # Set manually in Render Dashboard
+      - key: OPENROUTER_MODEL
+        value: google/gemma-2-9b-it:free
+      - key: APP_URL
+        value: https://your-frontend-domain.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: https://your-frontend-domain.vercel.app
+      - key: RATE_LIMIT_REQUESTS_PER_MINUTE
+        value: 10
+    healthCheckPath: /health
+    autoDeploy: true
+
+databases:
+  - name: tarot-db
+    plan: free
+    databaseName: tarot
+    user: tarot

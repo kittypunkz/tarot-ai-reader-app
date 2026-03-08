@@ -136,8 +136,14 @@ function ResultContent() {
   const cards = convertCards(reading);
   const positions = reading.spread.positions_th || reading.spread.positions;
   
-  // Generate interpretation from cards
-  const interpretation = reading.cards
+  // Use AI interpretation from API response
+  console.log('AI Interpretation:', {
+    th: reading.interpretation_th?.substring(0, 100),
+    en: reading.interpretation?.substring(0, 100)
+  });
+  
+  // Prioritize Thai interpretation, fallback to English, then to individual card meanings
+  const interpretation = reading.interpretation_th || reading.interpretation || reading.cards
     .map((card, index) => {
       const positionName = positions[index] || `ตำแหน่ง ${index + 1}`;
       const orientation = card.orientation === "reversed" ? " (กลับหัว)" : "";

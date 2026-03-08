@@ -71,6 +71,8 @@ export interface DrawCardsResponse {
   spread: SpreadInfo;
   cards: DrawnCard[];
   question: string;
+  interpretation?: string;  // AI interpretation (English)
+  interpretation_th?: string;  // AI interpretation (Thai)
   created_at: string;
 }
 

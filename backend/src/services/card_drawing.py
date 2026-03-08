@@ -21,6 +21,7 @@ from src.models.schemas import (
 )
 from src.database.database import get_db
 from src.database.models import Reading, CardDraw, Spread
+from src.services.ai_interpreter import get_interpreter
 
 
 # Spread definitions
@@ -193,12 +194,23 @@ class CardDrawingService:
             )
             drawn_cards.append(drawn_card)
         
-        # Save to database
+        # Generate AI interpretation
+        interpreter = get_interpreter()
+        interpretation_result = await interpreter.generate_interpretation(
+            question=request.question,
+            cards=drawn_cards,
+            spread_type=request.spread_type,
+            language=request.language
+        )
+        
+        # Save to database with interpretation
         await self._save_reading(
             reading_id=reading_id,
             request=request,
             spread_info=spread_info,
-            drawn_cards=drawn_cards
+            drawn_cards=drawn_cards,
+            interpretation=interpretation_result["interpretation"],
+            interpretation_th=interpretation_result["interpretation_th"]
         )
         
         return DrawCardsResponse(
@@ -207,6 +219,8 @@ class CardDrawingService:
             spread=spread_info,
             cards=drawn_cards,
             question=request.question,
+            interpretation=interpretation_result["interpretation"],
+            interpretation_th=interpretation_result["interpretation_th"],
             created_at=datetime.utcnow().isoformat()
         )
     
@@ -215,7 +229,9 @@ class CardDrawingService:
         reading_id: str,
         request: DrawCardsRequest,
         spread_info: SpreadInfo,
-        drawn_cards: List[DrawnCard]
+        drawn_cards: List[DrawnCard],
+        interpretation: str = None,
+        interpretation_th: str = None
     ):
         """Save reading to database"""
         try:
@@ -228,7 +244,9 @@ class CardDrawingService:
                 question=request.question,
                 spread_id=None,  # Will be linked if needed
                 spread_type=spread_info.spread_type.value,
-                status="in_progress"
+                status="completed",
+                interpretation=interpretation,
+                interpretation_th=interpretation_th
             )
             db.add(reading)
             

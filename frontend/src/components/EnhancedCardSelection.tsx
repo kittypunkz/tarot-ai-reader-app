@@ -196,7 +196,8 @@ export default function EnhancedCardSelection({
         meaning: c.meaning_th?.substring(0, 50) + '...'
       })));
       
-      // Store reading data for the result page
+      // Clear any old reading first, then store new one
+      localStorage.removeItem('tarot_current_reading');
       localStorage.setItem('tarot_current_reading', JSON.stringify(result));
       
       // Navigate to result page with reading_id

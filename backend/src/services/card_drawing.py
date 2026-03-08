@@ -232,6 +232,12 @@ class CardDrawingService:
                 )
                 drawn_cards.append(drawn_card)
         
+        # DEBUG: Log what cards we're interpreting
+        print(f"=== GENERATING INTERPRETATION ===")
+        print(f"Question: {request.question}")
+        print(f"Number of cards: {len(drawn_cards)}")
+        print(f"Cards: {[c.card_name_th for c in drawn_cards]}")
+        
         # Generate AI interpretation
         interpreter = get_interpreter()
         interpretation_result = await interpreter.generate_interpretation(
@@ -240,6 +246,8 @@ class CardDrawingService:
             spread_type=request.spread_type,
             language=request.language
         )
+        
+        print(f"Interpretation (first 100 chars): {interpretation_result['interpretation_th'][:100]}...")
         
         # Save to database with interpretation
         await self._save_reading(
@@ -320,6 +328,7 @@ class CardDrawingService:
             ).first()
             
             if not reading:
+                print(f"Reading not found: {reading_id}")
                 return None
             
             # Get spread info
@@ -330,6 +339,9 @@ class CardDrawingService:
             card_draws = db.query(CardDraw).filter(
                 CardDraw.reading_id == reading_id
             ).order_by(CardDraw.position).all()
+            
+            print(f"=== GET READING {reading_id} ===")
+            print(f"Found {len(card_draws)} cards in database")
             
             cards = []
             for cd in card_draws:

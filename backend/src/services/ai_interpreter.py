@@ -89,34 +89,34 @@ class AIInterpreter:
     ) -> str:
         """Build the prompt for the AI"""
         
-        # Build cards description
+        # Build cards description - ONLY the actual cards drawn
         cards_desc = []
         for i, card in enumerate(cards):
             position = card.position_name_th if language == "th" else card.position_name
             card_name = card.card_name_th if language == "th" else card.card_name
             orientation = "กลับหัว" if card.orientation.value == "reversed" and language == "th" else \
                          "reversed" if card.orientation.value == "reversed" else \
-                         "正位" if language == "th" else "upright"
+                         "หงายหน้า" if language == "th" else "upright"
             meaning = card.meaning_th if language == "th" else card.meaning
             
-            cards_desc.append(f"""
-{position}: {card_name} ({orientation})
-ความหมาย: {meaning}
-""")
+            cards_desc.append(f"""{position}: {card_name} ({orientation})
+ความหมาย: {meaning}""")
         
-        cards_text = "\n".join(cards_desc)
+        cards_text = "\n\n".join(cards_desc)
         
         if language == "th":
-            return f"""คำถาม: "{question}"
+            return f"""คุณเป็นหมอดูไพ่ทาโรต์ ผู้ใช้ถามคำถามและเปิดไพ่ได้ {len(cards)} ใบตามที่ระบุด้านล่างนี้เท่านั้น
+
+คำถาม: "{question}"
 
 ไพ่ที่เปิดได้ ({len(cards)} ใบ):
 {cards_text}
 
-กรุณาทำนายโดย:
-1. อธิบายความหมายของไพ่แต่ละใบในตำแหน่งของมัน
-2. เชื่อมโยงไพ่ทั้งหมดเข้าด้วยกันเป็นคำทำนายที่สมบูรณ์
-3. ตอบคำถามของผู้ถามอย่างตรงประเด็น
-4. ให้คำแนะนำที่ปฏิบัติได้จริง
+สิ่งสำคัญ:
+- ทำนายจากไพ่ {len(cards)} ใบนี้เท่านั้น ห้ามเพิ่มไพ่หรือตำแหน่งที่ไม่มีในรายการ
+- อธิบายความหมายของไพ่แต่ละใบ
+- เชื่อมโยงไพ่เข้าด้วยกันเป็นคำทำนายที่สมบูรณ์
+- ตอบคำถามของผู้ถามอย่างตรงประเด็น
 
 กรุณาตอบเป็นภาษาไทยก่อน แล้วตามด้วยภาษาอังกฤษ คั่นด้วย ---
 
@@ -127,18 +127,21 @@ class AIInterpreter:
 
 [English interpretation]"""
         else:
-            return f"""Question: "{question}"
+            return f"""You are a tarot reader. The user asked a question and drew exactly {len(cards)} cards as listed below ONLY.
+
+Question: "{question}"
 
 Drawn Cards ({len(cards)} cards):
 {cards_text}
 
-Please provide a tarot reading that:
-1. Explains each card's meaning in its position
-2. Weaves all cards together into a coherent narrative
-3. Directly addresses the question asked
-4. Provides actionable advice
+Important:
+- Interpret ONLY these {len(cards)} cards
+- Do NOT add cards or positions not in the list
+- Explain each card's meaning
+- Weave cards into a coherent reading
+- Directly address the question
 
-Please respond in English first, then Thai, separated by ---
+Respond in English first, then Thai, separated by ---
 
 Format:
 [English interpretation]

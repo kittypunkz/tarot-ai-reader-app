@@ -194,43 +194,38 @@ Important Rules:
 - No exceptions"""
     
     def _validate_ai_response(self, response: str, cards: List[DrawnCard], language: str) -> dict:
-        """Validate AI response and fix if hallucinating"""
-        
-        # Get list of actual card names
-        actual_card_names = set()
-        for card in cards:
-            actual_card_names.add(card.card_name.lower())
-            actual_card_names.add(card.card_name_th.lower())
-        
-        # Check if AI mentioned cards not in the list
-        lines = response.split('\n')
-        valid_lines = []
-        found_cards = []
-        
-        for line in lines:
-            line_lower = line.lower()
-            # Check if line mentions a card
-            for card in cards:
-                if card.card_name.lower() in line_lower or card.card_name_th.lower() in line_lower:
-                    found_cards.append(card.card_name)
-                    valid_lines.append(line)
-                    break
-            else:
-                # Line doesn't mention any card - could be intro/outro
-                # Keep it if it's general text
-                if not any(name in line_lower for name in ['the lovers', 'wheel of fortune', 'death', 'the magician'] if name not in actual_card_names):
-                    valid_lines.append(line)
+        """Validate AI response - check if it mentions wrong cards"""
         
         print(f"=== VALIDATION ===")
-        print(f"Actual cards: {[c.card_name for c in cards]}")
-        print(f"Cards found in AI response: {found_cards}")
+        print(f"Expected cards: {[c.card_name_th for c in cards]}")
         
-        # If AI hallucinated different cards, use fallback
-        if len(found_cards) != len(cards):
-            print(f"AI HALLUCINATION DETECTED! Expected {len(cards)} cards, found {len(found_cards)}")
+        # List of cards that should NOT be in the response
+        all_major_arcana = [
+            'the_fool', 'the_magician', 'the_high_priestess', 'the_empress', 'the_emperor',
+            'the_hierophant', 'the_lovers', 'the_chariot', 'strength', 'the_hermit',
+            'wheel_of_fortune', 'justice', 'the_hanged_man', 'death', 'temperance',
+            'the_devil', 'the_tower', 'the_star', 'the_moon', 'the_sun', 'judgement', 'the_world'
+        ]
+        
+        actual_card_ids = [c.card_id.lower() for c in cards]
+        wrong_cards_found = []
+        
+        response_lower = response.lower()
+        
+        # Check for cards that shouldn't be there
+        for card_id in all_major_arcana:
+            if card_id not in actual_card_ids:
+                # This card should NOT be in the response
+                card_name = card_id.replace('_', ' ')
+                if card_name in response_lower or card_id in response_lower:
+                    wrong_cards_found.append(card_id)
+        
+        if wrong_cards_found:
+            print(f"❌ WRONG CARDS DETECTED: {wrong_cards_found}")
+            print("Using fallback interpretation...")
             return self._generate_fallback_interpretation(cards, language)
         
-        # Split into Thai and English
+        print("✅ No wrong cards found in AI response")
         return self._parse_ai_response(response, language)
     
     def _parse_ai_response(self, response: str, language: str) -> dict:
